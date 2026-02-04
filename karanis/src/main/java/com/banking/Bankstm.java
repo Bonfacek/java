@@ -1,16 +1,17 @@
 package com.banking;
-
 import java.util.Scanner;
+
 
 public class Bankstm {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Jdbc jdbc = new Jdbc();
-        AddUsers users = new AddUsers(jdbc);
+        Addpin addpin=new Addpin(jdbc);
+        AddUsers users = new AddUsers(jdbc,addpin);
         Verification verifier = new Verification(jdbc, users);
-        Operations oppis = new Operations(jdbc);
+        Operations oppis = new Operations(jdbc, addpin);
         System.out.println("\n*****************************************");
-        System.out.println("Welcome to the Karanis Banking program");
+        System.out.println("Welcome to the I&M virtual Banking program");
         System.out.println("******************************************");
         System.out.println("--- User Login ---");
         System.out.print("Enter Username: ");
@@ -18,8 +19,10 @@ public class Bankstm {
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
         int id = verifier.verify(username, password);
+        oppis.balance(id);
 
-        while(id > 0) {
+
+        while(id >0) {
             System.out.println("\n1. Show Balance");
             System.out.println("2. Deposit");
             System.out.println("3. Withdraw");
@@ -40,20 +43,27 @@ public class Bankstm {
                 case 1:
                     loadingDots();
                     oppis.showBalance(id);
+                    System.out.println("Thanks for using our banking services!");
+                    id=-1;
                     break;
                 case 2:
                     loadingDots();
                     oppis.deposit(id);
+                    System.out.println("Thanks for using our banking services!");
+                    id=-1;
                     break;
                 case 3:
                     loadingDots();
                     oppis.withdraw(id);
+                    System.out.println("Thanks for using our banking services!");
+                    id=-1;
                     break;
                 case 4:
                     System.out.println("Thanks for using our banking services!");
                     return;
                 default:
                     System.out.println("INVALID OPERATION!!!");
+                    id=-1;
             }
         }
 

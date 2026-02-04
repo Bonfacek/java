@@ -12,16 +12,15 @@ public class AddUsers {
     private String password;
     private int accountpin;
     private Jdbc jdbc;
+    private Addpin addpin;
 
     Scanner nerd;
     int id=0;
 
-    public int getInt(Verification verification){
-        id=verification.verify(username, password);
-        return id;
-    }
-    public AddUsers(Jdbc jdbc) {
+
+    public AddUsers(Jdbc jdbc,Addpin addpin) {
         this.nerd = new Scanner(System.in);
+        this.addpin=addpin;
         this.jdbc = jdbc;
     }
    
@@ -49,39 +48,34 @@ public class AddUsers {
     }
 
     public void saveUser(){
-        int id;
+    
 
-        System.err.print("--- Registration ---");
-        System.out.println("Enter username: ");
+        System.err.println("--- Registration ---");
+        System.out.print("Enter username: ");
         this.username = this.nerd.nextLine();
         System.out.print("Enter password: ");
         this.password = this.nerd.nextLine();
-        System.out.print("Set the bank account pin you will be using: ");
-        this.accountpin=this.nerd.nextInt();
 
-        String pinquery="UPDATE pin SET pin= ? WHERE id= ?";
+           if (username.isEmpty() && password.isEmpty()){
+              System.out.println("Username and password must not be empty.");}
+
         String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
         try (
             Connection conn = this.jdbc.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            PreparedStatement psmt = conn.prepareStatement(pinquery);
         ) {
             pstmt.setString(1, this.username);
             pstmt.setString(2, this.password);
-            psmt.setInt(1,this.accountpin);
             pstmt.executeUpdate();
-            if (username.isEmpty() && password.isEmpty()){
-            System.out.println("Username and password must not be empty.");}
-            else {
-            System.out.println("User registered successfully!");}
-
-            System.out.print("Do you want to continue to the main banking program? [Y/N]: ");
-            if (nerd.next().toUpperCase().charAt(0) == 'Y') Bankstm.main(new String[0]);
-
         } catch (SQLException e) {
             System.out.println("Error saving user: " + e.getMessage());
         }
+      addpin.addUserPin();
+    System.out.println("User credentials registered successfully!");
+
+        System.out.print("Do you want to continue to the main banking program? [Y/N]: ");
+            if (nerd.next().toUpperCase().charAt(0) == 'Y') Bankstm.main(new String[0]);
 
     }
 

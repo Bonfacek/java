@@ -5,48 +5,43 @@ import java.sql.*;
 import java.util.Scanner;
 
 
+
 public class Operations {
 
     private Jdbc jdbc;
     private Scanner nerd;
-    int userpinID;
+    private Addpin addpin;
+    public double balance;
+   
 
-    public Operations(Jdbc jdbc) {
+    public Operations(Jdbc jdbc, Addpin addpin) {
+        this.addpin=addpin;
         this.jdbc = jdbc;
         this.nerd = new Scanner(System.in);
     }
+    
+   public double balance(int id){
+    double checkedbalance=0.0;
+    String balanceCheck="SELECT balance FROM users WHERE id=?"; 
+        try(Connection conn= jdbc.getConnection();
+            PreparedStatement stm= conn.prepareStatement(balanceCheck);){
 
-    public int verifycheck(int id){
-        String query="SELECT id FROM pin WHERE pin= ? ";
-           int userpinID =-1;
+            stm.setInt(1, id);
+            ResultSet rs=stm.executeQuery();
+            if(rs.next()){
+            checkedbalance=rs.getDouble("balance");}
+        }catch(SQLException e){
+            e.getErrorCode();
+            e.printStackTrace();
 
-        int pin;
-        System.out.println("Please enter your bank account pin: ");
-        pin=nerd.nextInt();
-
-        try (
-            Connection conn=jdbc.getConnection();
-            PreparedStatement ptsmt=conn.prepareStatement(query)){
-                ptsmt.setInt(1, pin);              
-                
-            ResultSet rs=ptsmt.executeQuery();
-               if(rs.next()){
-                userpinID=rs.getInt(id);
-            }
-
-
-        }catch(SQLException ex){
-            ex.printStackTrace();
         }
-        return userpinID;
 
-    }
- 
+     return checkedbalance;
 
+   }
       
     public double showBalance(int id){  
-        double balance=0.0;
-            if(userpinID !=id){return -1;}
+        addpin.checked();
 
         String sql = "SELECT balance FROM users WHERE id=?";     
         
@@ -71,19 +66,16 @@ public class Operations {
             return balance;
         }
 
-    public void deposit(int id) {    
-
-        if(userpinID !=id){
-            return;
-        }
-
+    public void deposit(int id) {        
         System.out.print("Enter the amount you want to deposit: ");
         double amount = nerd.nextDouble();
 
         if (amount <= 0) {
-            System.out.println("Invalid amount.");
+            System.out.println("Invalid amount, Can't deposit zero money.");
             return;
         }
+
+         addpin.checked(); 
 
         String sql = "UPDATE users SET balance = balance + ? WHERE id = ?";
 
@@ -102,24 +94,24 @@ public class Operations {
     }
 
     public void withdraw(int id) {
-      
-
-        if(userpinID !=id){
-            return;
-        }
+             
         System.out.print("Enter the amount you want to withdraw: ");
         double amount = nerd.nextDouble();
-        double balance = showBalance(id);
-
         if (amount <= 0) {
             System.out.println("Invalid amount.");
             return;
         }
 
+
+        balance=balance(id);
+
         if (amount > balance) {
-            System.out.println("Insufficient funds.");
+            System.out.println("Insufficient funds in your account.");
             return;
         }
+
+         addpin.checked();
+         
 
         String sql = "UPDATE users SET balance = balance - ? WHERE id = ?";
 
@@ -135,5 +127,6 @@ public class Operations {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    
     }
 }
